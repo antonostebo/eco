@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Hushåll">
+<title>Hushållsekonomi</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500&display=swap');
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  :root {
+    --bg: #F7F6F3;
+    --surface: #FFFFFF;
+    --border: rgba(0,0,0,0.08);
+    --border-med: rgba(0,0,0,0.14);
+    --text: #1A1A1A;
+    --text-muted: #888;
+    --text-hint: #B0B0B0;
+    --accent: #1A1A1A;
+    --green-bg: #E8F5EE;
+    --green-text: #1A6640;
+    --blue-bg: #E8F0FB;
+    --blue-text: #1A3F8F;
+    --amber-bg: #FBF3E8;
+    --amber-text: #7A4A10;
+    --radius: 14px;
+    --radius-sm: 8px;
+  }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .topbar {
+    background: var(--surface);
+    border-bottom: 0.5px solid var(--border);
+    padding: 18px 20px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  .topbar-title { font-size: 17px; font-weight: 500; }
+  .content { padding: 16px; max-width: 480px; margin: 0 auto; }
+  .card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    border: 0.5px solid var(--border);
+    padding: 16px 18px;
+    margin-bottom: 12px;
+  }
+  .card-title {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .field-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .field-row:last-child { margin-bottom: 0; }
+  .field-label { font-size: 15px; flex: 1; color: var(--text); }
+  .field-row input[type=number] {
+    width: 120px;
+    font-size: 15px;
+    font-family: inherit;
+    text-align: right;
+    border: 0.5px solid var(--border-med);
+    border-radius: var(--radius-sm);
+    padding: 9px 12px;
+    background: var(--bg);
+    color: var(--text);
+    outline: none;
+    -webkit-appearance: none;
+  }
+  .field-row input[type=number]:focus { border-color: var(--text); }
+
+  .sub-label {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-hint);
+    margin: 14px 0 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .sub-label:first-of-type { margin-top: 0; }
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 3px 9px;
+    border-radius: 99px;
+    letter-spacing: 0.02em;
+  }
+  .badge-shared { background: var(--green-bg); color: var(--green-text); }
+  .badge-p1 { background: var(--blue-bg); color: var(--blue-text); }
+  .badge-p2 { background: var(--amber-bg); color: var(--amber-text); }
+
+  .expense-row {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 8px;
+    align-items: center;
+  }
+  .expense-row input[type=text] {
+    flex: 1;
+    min-width: 0;
+    font-size: 15px;
+    font-family: inherit;
+    border: 0.5px solid var(--border-med);
+    border-radius: var(--radius-sm);
+    padding: 9px 12px;
+    background: var(--bg);
+    color: var(--text);
+    outline: none;
+  }
+  .expense-row input[type=text]:focus { border-color: var(--text); }
+  .expense-row input[type=number] {
+    width: 95px;
+    font-size: 15px;
+    font-family: inherit;
+    text-align: right;
+    border: 0.5px solid var(--border-med);
+    border-radius: var(--radius-sm);
+    padding: 9px 10px;
+    background: var(--bg);
+    color: var(--text);
+    outline: none;
+    flex-shrink: 0;
+    -webkit-appearance: none;
+  }
+  .expense-row input[type=number]:focus { border-color: var(--text); }
+  .rm-btn {
+    background: none;
+    border: none;
+    color: var(--text-hint);
+    cursor: pointer;
+    font-size: 20px;
+    padding: 0 2px;
+    line-height: 1;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+  }
+  .add-btn {
+    width: 100%;
+    background: none;
+    border: 0.5px dashed var(--border-med);
+    border-radius: var(--radius-sm);
+    padding: 10px;
+    font-size: 14px;
+    font-family: inherit;
+    color: var(--text-muted);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    margin-top: 4px;
+  }
+  .add-btn:active { background: var(--bg); }
+
+  .result-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0,1fr));
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .result-tile {
+    background: var(--bg);
+    border-radius: var(--radius-sm);
+    padding: 12px 14px;
+  }
+  .result-tile-label { font-size: 12px; color: var(--text-muted); margin-bottom: 4px; }
+  .result-tile-value { font-size: 20px; font-weight: 500; }
+  .result-tile-sub { font-size: 11px; color: var(--text-muted); margin-top: 3px; }
+  .divider { border: none; border-top: 0.5px solid var(--border); margin: 12px 0; }
+  .total-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 14px;
+    color: var(--text-muted);
+  }
+  .total-row span:last-child { font-size: 15px; font-weight: 500; color: var(--text); }
+  .transfer-box {
+    margin-top: 10px;
+    padding: 12px 14px;
+    background: var(--bg);
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+  .transfer-box strong { color: var(--text); }
+  .save-btn {
+    width: 100%;
+    margin-top: 12px;
+    padding: 13px;
+    border-radius: var(--radius-sm);
+    border: 0.5px solid var(--border-med);
+    background: none;
+    font-size: 15px;
+    font-weight: 500;
+    font-family: inherit;
+    cursor: pointer;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+  }
+  .save-btn:active { background: var(--bg); }
+
+  .history-item {
+    border-bottom: 0.5px solid var(--border);
+    padding: 12px 0;
+  }
+  .history-item:last-child { border-bottom: none; }
+  .hi-header { display: flex; justify-content: space-between; align-items: center; }
+  .hi-month { font-size: 15px; font-weight: 500; }
+  .hi-total { font-size: 14px; color: var(--text-muted); }
+  .hi-detail { font-size: 12px; color: var(--text-muted); margin-top: 5px; display: flex; flex-direction: column; gap: 2px; }
+
+  .empty { font-size: 14px; color: var(--text-hint); text-align: center; padding: 2rem 0; }
+
+  .name-row { display: flex; gap: 8px; }
+  .name-row input {
+    flex: 1;
+    font-size: 15px;
+    font-family: inherit;
+    border: 0.5px solid var(--border-med);
+    border-radius: var(--radius-sm);
+    padding: 9px 12px;
+    background: var(--bg);
+    color: var(--text);
+    outline: none;
+  }
+  .name-row input:focus { border-color: var(--text); }
+
+  .danger-btn {
+    width: 100%;
+    margin-top: 8px;
+    padding: 12px;
+    border-radius: var(--radius-sm);
+    border: 0.5px solid rgba(200,50,50,0.3);
+    background: none;
+    font-size: 14px;
+    font-family: inherit;
+    cursor: pointer;
+    color: #C83232;
+  }
+
+  .breakdown-text {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+    line-height: 1.6;
+  }
+
+  /* Bottom nav */
+  .bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--surface);
+    border-top: 0.5px solid var(--border);
+    display: flex;
+    padding-bottom: env(safe-area-inset-bottom);
+    z-index: 10;
+  }
+  .nav-btn {
+    flex: 1;
+    background: none;
+    border: none;
+    padding: 12px 8px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    color: var(--text-hint);
+    font-size: 10px;
+    font-family: inherit;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .nav-btn.active { color: var(--text); }
+  .nav-icon { font-size: 22px; line-height: 1; }
+  .page-pad { padding-bottom: calc(70px + env(safe-area-inset-bottom)); }
+
+  input[type=number]::-webkit-inner-spin-button,
+  input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <span class="topbar-title" id="topbar-title">Beräkna</span>
+</div>
+
+<div class="content page-pad">
+
+  <!-- CALC TAB -->
+  <div id="tab-calc">
+    <div class="card">
+      <div class="card-title">💰 Löner</div>
+      <div class="field-row">
+        <span class="field-label" id="label-p1">Person 1</span>
+        <input type="number" id="salary1" placeholder="0 kr" min="0" inputmode="numeric" oninput="calc()" />
+      </div>
+      <div class="field-row">
+        <span class="field-label" id="label-p2">Person 2</span>
+        <input type="number" id="salary2" placeholder="0 kr" min="0" inputmode="numeric" oninput="calc()" />
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🧾 Utgifter</div>
+
+      <div class="sub-label"><span class="badge badge-shared">Gemensamma</span></div>
+      <div id="shared-list"></div>
+      <button class="add-btn" onclick="addExpense('shared')">+ Lägg till gemensam utgift</button>
+
+      <div class="sub-label" style="margin-top:18px;"><span class="badge badge-p1" id="badge-p1">Person 1</span></div>
+      <div id="p1-list"></div>
+      <button class="add-btn" id="add-p1-btn" onclick="addExpense('p1')">+ Lägg till</button>
+
+      <div class="sub-label" style="margin-top:18px;"><span class="badge badge-p2" id="badge-p2">Person 2</span></div>
+      <div id="p2-list"></div>
+      <button class="add-btn" id="add-p2-btn" onclick="addExpense('p2')">+ Lägg till</button>
+    </div>
+
+    <div class="card" id="result-section" style="display:none">
+      <div class="card-title">📊 Resultat</div>
+      <div class="result-grid">
+        <div class="result-tile">
+          <div class="result-tile-label" id="res-label1">Person 1</div>
+          <div class="result-tile-value" id="res-share1">–</div>
+          <div class="result-tile-sub" id="res-pct1"></div>
+        </div>
+        <div class="result-tile">
+          <div class="result-tile-label" id="res-label2">Person 2</div>
+          <div class="result-tile-value" id="res-share2">–</div>
+          <div class="result-tile-sub" id="res-pct2"></div>
+        </div>
+      </div>
+      <div class="breakdown-text" id="res-breakdown"></div>
+      <div class="divider"></div>
+      <div class="total-row">
+        <span>Totalt att betala</span>
+        <span id="res-total">–</span>
+      </div>
+      <div class="transfer-box" id="transfer-row"></div>
+      <button class="save-btn" onclick="saveMonth()">💾 Spara denna månad</button>
+    </div>
+  </div>
+
+  <!-- HISTORY TAB -->
+  <div id="tab-history" style="display:none">
+    <div class="card">
+      <div class="card-title">📅 Sparade månader</div>
+      <div id="history-list"><div class="empty">Inga sparade månader ännu</div></div>
+    </div>
+  </div>
+
+  <!-- SETTINGS TAB -->
+  <div id="tab-settings" style="display:none">
+    <div class="card">
+      <div class="card-title">👤 Namn</div>
+      <div class="name-row">
+        <input type="text" id="name1" placeholder="Person 1" oninput="saveSettings(); updateLabels();" maxlength="20" />
+        <input type="text" id="name2" placeholder="Person 2" oninput="saveSettings(); updateLabels();" maxlength="20" />
+      </div>
+    </div>
+    <button class="danger-btn" onclick="clearHistory()">🗑 Rensa all historik</button>
+  </div>
+
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="bottom-nav">
+  <button class="nav-btn active" id="nav-calc" onclick="showTab('calc')">
+    <span class="nav-icon">🧮</span>Beräkna
+  </button>
+  <button class="nav-btn" id="nav-history" onclick="showTab('history')">
+    <span class="nav-icon">📅</span>Historik
+  </button>
+  <button class="nav-btn" id="nav-settings" onclick="showTab('settings')">
+    <span class="nav-icon">⚙️</span>Inställningar
+  </button>
+</div>
+
+<script>
+let expenses = { shared: [], p1: [], p2: [] };
+let history = [];
+let settings = { name1: '', name2: '' };
+
+function load() {
+  try {
+    const s = localStorage.getItem('hush_settings');
+    if (s) settings = JSON.parse(s);
+    const h = localStorage.getItem('hush_history');
+    if (h) history = JSON.parse(h);
+    const e = localStorage.getItem('hush_expenses');
+    if (e) {
+      const parsed = JSON.parse(e);
+      expenses = parsed.shared !== undefined ? parsed : { shared: parsed, p1: [], p2: [] };
+    } else {
+      expenses = {
+        shared: [{name:'Hyra/lån',amount:''},{name:'El',amount:''},{name:'Mat',amount:''}],
+        p1: [], p2: []
+      };
+    }
+  } catch(err) {
+    expenses = { shared: [{name:'Hyra/lån',amount:''},{name:'El',amount:''},{name:'Mat',amount:''}], p1: [], p2: [] };
+  }
+  document.getElementById('name1').value = settings.name1 || '';
+  document.getElementById('name2').value = settings.name2 || '';
+  updateLabels();
+  renderAll();
+  renderHistory();
+}
+
+function saveSettings() {
+  settings.name1 = document.getElementById('name1').value;
+  settings.name2 = document.getElementById('name2').value;
+  localStorage.setItem('hush_settings', JSON.stringify(settings));
+}
+
+function getName(i) {
+  return (i === 1 ? settings.name1 : settings.name2) || 'Person ' + i;
+}
+
+function updateLabels() {
+  const n1 = getName(1), n2 = getName(2);
+  document.getElementById('label-p1').textContent = n1;
+  document.getElementById('label-p2').textContent = n2;
+  document.getElementById('res-label1').textContent = n1;
+  document.getElementById('res-label2').textContent = n2;
+  document.getElementById('badge-p1').textContent = n1;
+  document.getElementById('badge-p2').textContent = n2;
+  document.getElementById('add-p1-btn').textContent = '+ Lägg till för ' + n1;
+  document.getElementById('add-p2-btn').textContent = '+ Lägg till för ' + n2;
+  calc();
+}
+
+function addExpense(type) {
+  expenses[type].push({ name: '', amount: '' });
+  saveExpenses();
+  renderList(type);
+  setTimeout(() => {
+    const lists = { shared: 'shared-list', p1: 'p1-list', p2: 'p2-list' };
+    const rows = document.getElementById(lists[type]).querySelectorAll('.expense-row');
+    if (rows.length) rows[rows.length - 1].querySelector('input[type=text]').focus();
+  }, 50);
+}
+
+function removeExpense(type, i) {
+  expenses[type].splice(i, 1);
+  saveExpenses();
+  renderList(type);
+  calc();
+}
+
+function saveExpenses() {
+  localStorage.setItem('hush_expenses', JSON.stringify(expenses));
+}
+
+function renderList(type) {
+  const ids = { shared: 'shared-list', p1: 'p1-list', p2: 'p2-list' };
+  const list = document.getElementById(ids[type]);
+  list.innerHTML = '';
+  expenses[type].forEach((e, i) => {
+    const row = document.createElement('div');
+    row.className = 'expense-row';
+
+    const nm = document.createElement('input');
+    nm.type = 'text';
+    nm.placeholder = 'Beskrivning';
+    nm.value = e.name;
+    nm.oninput = () => { expenses[type][i].name = nm.value; saveExpenses(); };
+
+    const am = document.createElement('input');
+    am.type = 'number';
+    am.placeholder = '0';
+    am.min = '0';
+    am.inputMode = 'numeric';
+    am.value = e.amount;
+    am.oninput = () => { expenses[type][i].amount = am.value; saveExpenses(); calc(); };
+
+    const rm = document.createElement('button');
+    rm.className = 'rm-btn';
+    rm.textContent = '×';
+    rm.onclick = () => removeExpense(type, i);
+
+    row.appendChild(nm);
+    row.appendChild(am);
+    row.appendChild(rm);
+    list.appendChild(row);
+  });
+}
+
+function renderAll() {
+  renderList('shared');
+  renderList('p1');
+  renderList('p2');
+}
+
+function sumList(type) {
+  return expenses[type].reduce((s, e) => s + (parseFloat(e.amount) || 0), 0);
+}
+
+function calc() {
+  const s1 = parseFloat(document.getElementById('salary1').value) || 0;
+  const s2 = parseFloat(document.getElementById('salary2').value) || 0;
+  const sharedTotal = sumList('shared');
+  const p1own = sumList('p1');
+  const p2own = sumList('p2');
+  const grandTotal = sharedTotal + p1own + p2own;
+
+  const rs = document.getElementById('result-section');
+  if (grandTotal === 0 || (s1 === 0 && s2 === 0)) { rs.style.display = 'none'; return; }
+  rs.style.display = 'block';
+
+  const sumSal = s1 + s2;
+  const sharedShare1 = sumSal > 0 ? (s1 / sumSal) * sharedTotal : sharedTotal / 2;
+  const sharedShare2 = sharedTotal - sharedShare1;
+  const total1 = sharedShare1 + p1own;
+  const total2 = sharedShare2 + p2own;
+  const pct1 = sumSal > 0 ? Math.round(s1 / sumSal * 100) : 50;
+  const pct2 = 100 - pct1;
+
+  document.getElementById('res-share1').textContent = Math.round(total1).toLocaleString('sv-SE') + ' kr';
+  document.getElementById('res-share2').textContent = Math.round(total2).toLocaleString('sv-SE') + ' kr';
+  document.getElementById('res-pct1').textContent = pct1 + '% av lön';
+  document.getElementById('res-pct2').textContent = pct2 + '% av lön';
+  document.getElementById('res-total').textContent = Math.round(grandTotal).toLocaleString('sv-SE') + ' kr';
+
+  let parts = [];
+  if (sharedTotal > 0) parts.push('Gemensamt: ' + Math.round(sharedTotal).toLocaleString('sv-SE') + ' kr (' + Math.round(sharedShare1).toLocaleString('sv-SE') + ' + ' + Math.round(sharedShare2).toLocaleString('sv-SE') + ')');
+  if (p1own > 0) parts.push(getName(1) + ' eget: ' + Math.round(p1own).toLocaleString('sv-SE') + ' kr');
+  if (p2own > 0) parts.push(getName(2) + ' eget: ' + Math.round(p2own).toLocaleString('sv-SE') + ' kr');
+  document.getElementById('res-breakdown').textContent = parts.join(' · ');
+
+  const trow = document.getElementById('transfer-row');
+  const diff = total2 - total1;
+  if (Math.abs(diff) < 1) {
+    trow.textContent = '✓ Ni betalar lika mycket';
+  } else if (diff > 0) {
+    trow.innerHTML = '<strong>' + getName(2) + '</strong> för över <strong>' + Math.round(Math.abs(diff)).toLocaleString('sv-SE') + ' kr</strong> till ' + getName(1);
+  } else {
+    trow.innerHTML = '<strong>' + getName(1) + '</strong> för över <strong>' + Math.round(Math.abs(diff)).toLocaleString('sv-SE') + ' kr</strong> till ' + getName(2);
+  }
+}
+
+function saveMonth() {
+  const s1 = parseFloat(document.getElementById('salary1').value) || 0;
+  const s2 = parseFloat(document.getElementById('salary2').value) || 0;
+  const sharedTotal = sumList('shared');
+  const p1own = sumList('p1');
+  const p2own = sumList('p2');
+  const grandTotal = sharedTotal + p1own + p2own;
+  if (grandTotal === 0) return;
+
+  const sumSal = s1 + s2;
+  const sharedShare1 = sumSal > 0 ? (s1 / sumSal) * sharedTotal : sharedTotal / 2;
+  const total1 = Math.round(sharedShare1 + p1own);
+  const total2 = Math.round(grandTotal) - total1;
+
+  const now = new Date();
+  const months = ['Jan','Feb','Mar','Apr','Maj','Jun','Jul','Aug','Sep','Okt','Nov','Dec'];
+  const label = months[now.getMonth()] + ' ' + now.getFullYear();
+
+  history.unshift({
+    label, total: Math.round(grandTotal), share1: total1, share2: total2,
+    sharedTotal: Math.round(sharedTotal), p1own: Math.round(p1own), p2own: Math.round(p2own),
+    name1: getName(1), name2: getName(2)
+  });
+
+  localStorage.setItem('hush_history', JSON.stringify(history));
+  renderHistory();
+  showTab('history');
+}
+
+function renderHistory() {
+  const list = document.getElementById('history-list');
+  if (!history.length) { list.innerHTML = '<div class="empty">Inga sparade månader ännu</div>'; return; }
+  list.innerHTML = '';
+  history.forEach(m => {
+    const el = document.createElement('div');
+    el.className = 'history-item';
+    let extra = [];
+    if (m.sharedTotal) extra.push('Gemensamt: ' + m.sharedTotal.toLocaleString('sv-SE') + ' kr');
+    if (m.p1own) extra.push((m.name1||'P1') + ' eget: ' + m.p1own.toLocaleString('sv-SE') + ' kr');
+    if (m.p2own) extra.push((m.name2||'P2') + ' eget: ' + m.p2own.toLocaleString('sv-SE') + ' kr');
+    el.innerHTML = `
+      <div class="hi-header">
+        <span class="hi-month">${m.label}</span>
+        <span class="hi-total">${m.total.toLocaleString('sv-SE')} kr</span>
+      </div>
+      <div class="hi-detail">
+        <span>${m.name1||'Person 1'}: ${m.share1.toLocaleString('sv-SE')} kr &nbsp;·&nbsp; ${m.name2||'Person 2'}: ${m.share2.toLocaleString('sv-SE')} kr</span>
+        ${extra.length ? '<span>' + extra.join(' · ') + '</span>' : ''}
+      </div>`;
+    list.appendChild(el);
+  });
+}
+
+function clearHistory() {
+  if (!confirm('Rensa all historik?')) return;
+  history = [];
+  localStorage.removeItem('hush_history');
+  renderHistory();
+}
+
+const tabTitles = { calc: 'Beräkna', history: 'Historik', settings: 'Inställningar' };
+function showTab(t) {
+  ['calc','history','settings'].forEach(id => {
+    document.getElementById('tab-' + id).style.display = id === t ? 'block' : 'none';
+    document.getElementById('nav-' + id).classList.toggle('active', id === t);
+  });
+  document.getElementById('topbar-title').textContent = tabTitles[t];
+}
+
+load();
+</script>
+</body>
+</html>
